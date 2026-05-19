@@ -6,3 +6,6 @@
 
 # And except this .gitignore file itself
 !.gitignore
+
+# Track README.md
+!README.md
