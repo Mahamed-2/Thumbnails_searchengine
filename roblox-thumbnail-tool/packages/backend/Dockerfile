@@ -14,7 +14,9 @@ RUN apk add --no-cache vips-dev fftw-dev gcc g++ make
 # ──────────────────────────────────────────────
 FROM base AS deps
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 RUN npm install
+RUN npx prisma generate
 
 # ──────────────────────────────────────────────
 # Stage 3: Development (hot-reload)
@@ -27,7 +29,7 @@ RUN mkdir -p /app/data/images /app/logs
 EXPOSE 3001 9090
 # Use dumb-init to handle signals correctly (SIGTERM → graceful shutdown)
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npx", "tsx", "watch", "src/index.ts"]
+CMD ["sh", "-c", "npx prisma db push && npx tsx watch src/index.ts"]
 
 # ──────────────────────────────────────────────
 # Stage 4: Build (TypeScript → JS)
