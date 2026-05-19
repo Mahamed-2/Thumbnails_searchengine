@@ -5,7 +5,7 @@
 # ──────────────────────────────────────────────
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN apk add --no-cache curl dumb-init
+RUN apk add --no-cache curl dumb-init openssl
 # Required for sharp (native image processing)
 RUN apk add --no-cache vips-dev fftw-dev gcc g++ make
 
