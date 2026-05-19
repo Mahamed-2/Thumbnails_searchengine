@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Progress } from '../components/ui/Progress';
 import { api } from '../lib/api';
+import { API_BASE_URL } from '../lib/api';
 import { useSSE } from '../hooks/useSSE';
 
 export default function CollectionCenter() {
@@ -16,7 +17,7 @@ export default function CollectionCenter() {
   const [endId, setEndId] = useState(1000);
   
   // Real-time events connection
-  useSSE({ url: '/api/v1/events/all' });
+  useSSE({ url: `${API_BASE_URL}/api/v1/events/all` });
 
   // Fetch recent jobs
   const { data: jobsResponse, isLoading } = useQuery({
