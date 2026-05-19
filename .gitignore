@@ -1,0 +1,8 @@
+# Ignore everything in the root directory
+/*
+
+# Except the roblox-thumbnail-tool folder
+!/roblox-thumbnail-tool/
+
+# And except this .gitignore file itself
+!.gitignore
