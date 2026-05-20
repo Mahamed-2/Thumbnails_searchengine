@@ -5,12 +5,13 @@
 // Interactive Recharts area chart for thumbnail collection trends + job status pie
 // =============================================================================
 
+import { TrendingUp, Activity } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { TrendingUp, Activity } from 'lucide-react';
+
 import { Skeleton } from './ui/Skeleton';
 
 interface TimeseriesPoint {

@@ -2,8 +2,8 @@
 // src/components/ui/Skeleton.tsx
 // =============================================================================
 
+import { clsx } from 'clsx';
 import { type HTMLAttributes } from 'react';
-import clsx from 'clsx';
 
 interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   /** Shorthand height class, e.g. 'h-4', 'h-8' */

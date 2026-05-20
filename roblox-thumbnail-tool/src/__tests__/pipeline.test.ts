@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { describe, it, expect } from 'vitest';
+
 import { hammingDistance, isDuplicate, calculatePHash } from '../lib/pipeline';
 
 // ── hammingDistance ───────────────────────────────────────────────────────────

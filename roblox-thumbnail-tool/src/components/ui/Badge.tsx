@@ -2,8 +2,8 @@
 // src/components/ui/Badge.tsx
 // =============================================================================
 
+import { clsx } from 'clsx';
 import { type HTMLAttributes } from 'react';
-import clsx from 'clsx';
 
 export type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'neutral';
 

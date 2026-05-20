@@ -2,8 +2,8 @@
 // src/components/ui/Button.tsx
 // =============================================================================
 
+import { clsx } from 'clsx';
 import { type ButtonHTMLAttributes, forwardRef } from 'react';
-import clsx from 'clsx';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize    = 'sm' | 'md' | 'lg';

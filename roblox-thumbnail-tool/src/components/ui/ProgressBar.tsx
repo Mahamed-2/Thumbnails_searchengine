@@ -2,7 +2,7 @@
 // src/components/ui/ProgressBar.tsx
 // =============================================================================
 
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 interface ProgressBarProps {
   value: number; // 0–100
