@@ -1,10 +1,5 @@
 name: Deploy to Vercel — Roblox Thumbnail Engine
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Deploys the Next.js app to Vercel on push to main.
-# For GitHub Pages static export, see README.md for the alternative config.
-# ──────────────────────────────────────────────────────────────────────────────
-
 on:
   push:
     branches: [main]
@@ -18,11 +13,13 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  # ── Quality Gate ─────────────────────────────────────────────────────────────
   quality:
     name: TypeCheck + Lint + Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: roblox-thumbnail-tool
 
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +28,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: roblox-thumbnail-tool/package-lock.json
 
       - run: npm ci
 
@@ -50,12 +48,14 @@ jobs:
           UPSTASH_REDIS_REST_URL: "https://mock.upstash.io"
           UPSTASH_REDIS_REST_TOKEN: "mock-token"
 
-  # ── Vercel Production Deploy ──────────────────────────────────────────────────
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: quality
     timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: roblox-thumbnail-tool
 
     environment:
       name: production
@@ -68,6 +68,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: roblox-thumbnail-tool/package-lock.json
 
       - run: npm ci
 

@@ -9,3 +9,7 @@
 
 # Track README.md
 !README.md
+
+# Track .github directory (for GitHub Actions workflows)
+!.github/
+
