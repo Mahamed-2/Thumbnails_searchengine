@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 
 import { db } from '@/lib/db';
+import { buildFilename, uploadImage } from '@/lib/storage';
 
 export interface PipelineOptions {
   width?: number;
@@ -24,6 +25,8 @@ export interface PipelineResult {
   pHash?: string;
   isDuplicate?: boolean;
   image?: ResizeResult;
+  cloudUrl?: string;
+  localPath?: string;
 }
 
 export interface ValidationResult {
@@ -214,6 +217,27 @@ export async function runPipeline(url: string, options: PipelineOptions = {}): P
     // 3. Process
     const processed = await processImage(rawBuffer, options);
 
+    // 3.5 Upload to storage (if downloadImages is enabled)
+    let cloudUrl: string | undefined;
+    let localPath: string | undefined;
+
+    if (process.env.DISABLE_STORAGE_UPLOAD !== 'true' && options.userId && options.format) {
+      try {
+        const filename = buildFilename(
+          options.userId,
+          options.width && options.height ? `${options.width}x${options.height}` : 'original',
+          'avatar',
+          options.format,
+        );
+        const uploadResult = await uploadImage(processed.buffer, filename);
+        cloudUrl  = uploadResult.publicUrl;
+        localPath = uploadResult.path;
+      } catch (err) {
+        // Storage upload failure is non-fatal — log and continue
+        console.warn('[pipeline] Storage upload failed:', err instanceof Error ? err.message : String(err));
+      }
+    }
+
     // 4. Perceptual hashing and deduplication checks
     let pHash: string | undefined;
     let isDupe = false;
@@ -238,6 +262,8 @@ export async function runPipeline(url: string, options: PipelineOptions = {}): P
       pHash,
       isDuplicate: isDupe,
       image: processed,
+      cloudUrl,
+      localPath,
     };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);

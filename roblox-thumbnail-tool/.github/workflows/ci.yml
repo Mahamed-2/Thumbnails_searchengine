@@ -42,6 +42,13 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Unit tests
+        run: npm run test:run
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/roblox_test"
+          UPSTASH_REDIS_REST_URL: "https://mock.upstash.io"
+          UPSTASH_REDIS_REST_TOKEN: "mock-token"
+
   build:
     name: Next.js Build
     runs-on: ubuntu-latest

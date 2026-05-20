@@ -1,0 +1,46 @@
+name: Scheduled Collection — Roblox Thumbnail Engine
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Calls the /api/cron/collect endpoint every 30 minutes to process pending jobs.
+# Requires APP_URL and CRON_SECRET to be set in GitHub Secrets.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # Every 30 minutes
+  workflow_dispatch:          # Allow manual trigger from GitHub UI
+
+jobs:
+  trigger-collection:
+    name: Trigger Collection Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Call collection cron endpoint
+        id: trigger
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.APP_URL }}/api/cron/collect")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Collection cron returned HTTP $HTTP_CODE: $BODY"
+            exit 1
+          fi
+          
+          echo "status=$HTTP_CODE" >> $GITHUB_OUTPUT
+          echo "body=$BODY" >> $GITHUB_OUTPUT
+
+      - name: Log result
+        run: |
+          echo "✅ Collection triggered successfully"
+          echo "Status: ${{ steps.trigger.outputs.status }}"

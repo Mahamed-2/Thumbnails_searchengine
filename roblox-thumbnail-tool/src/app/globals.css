@@ -135,6 +135,7 @@ body {
 .badge-error   { background: rgba(239, 68, 68, 0.15);  color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
 .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
 .badge-info    { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+.badge-neutral { background: rgba(107, 105, 126, 0.15); color: #a5a3c2; border: 1px solid rgba(107, 105, 126, 0.3); }
 
 /* ── Buttons ────────────────────────────────────────────────────────────────── */
 .btn {
@@ -172,6 +173,19 @@ body {
 }
 
 .btn-primary:active { transform: translateY(0); }
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+}
+
+.btn-danger:active { transform: translateY(0); }
 
 .btn-secondary {
   background: transparent;
