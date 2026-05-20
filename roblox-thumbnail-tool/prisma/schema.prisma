@@ -1,0 +1,164 @@
+// =============================================================================
+// Prisma Schema — Roblox Thumbnail Dataset Tool (Vercel-Optimized PostgreSQL)
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // Connection pooling for serverless
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Direct connection for migrations
+}
+
+// ─── Thumbnails ───────────────────────────────────────────────────────────────
+model Thumbnail {
+  id          String   @id @default(cuid())
+  userId      Int
+  imageUrl    String
+  localPath   String?
+  cloudUrl    String?
+  pHash       String?  // Perceptual hash for deduplication
+  size        String   // e.g., "720x720"
+  format      String   // "png" | "jpeg" | "webp"
+  cropType    String   // "avatar" | "avatar-bust" | "avatar-headshot"
+  fileSizeKb  Int?
+  width       Int?
+  height      Int?
+  quality     Int?     // 0–100 computed quality score
+  state       String   @default("Completed") // "Completed" | "Pending" | "Error"
+  isDuplicate Boolean  @default(false)
+  jobId       String?
+  collectedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [robloxId])
+  job  CollectionJob? @relation(fields: [jobId], references: [id])
+
+  @@unique([userId, size, cropType])
+  @@index([userId])
+  @@index([pHash])
+  @@index([size])
+  @@index([cropType])
+  @@index([state])
+  @@index([collectedAt])
+  @@map("thumbnails")
+}
+
+// ─── Games ────────────────────────────────────────────────────────────────────
+model Game {
+  id            String   @id @default(cuid())
+  robloxId      Int      @unique
+  name          String
+  description   String?
+  creatorId     Int?
+  creatorType   String?  // "User" | "Group"
+  thumbnailUrl  String?
+  localThumbPath String?
+  maxPlayers    Int?
+  playing       Int?
+  visits        BigInt?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([visits])
+  @@index([playing])
+  @@map("games")
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+model User {
+  id          String   @id @default(cuid())
+  robloxId    Int      @unique
+  name        String?
+  displayName String?
+  isBanned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  thumbnails Thumbnail[]
+
+  @@index([robloxId])
+  @@map("users")
+}
+
+// ─── Collection Jobs ──────────────────────────────────────────────────────────
+model CollectionJob {
+  id            String   @id @default(cuid())
+  name          String?
+  status        String   @default("pending") // "pending"|"running"|"paused"|"completed"|"failed"|"cancelled"
+  strategy      String   // "user-range" | "game-search" | "popular-games"
+  config        String   // JSON: { startUserId, endUserId, sizes, cropTypes, ... }
+  totalItems    Int      @default(0)
+  processedItems Int     @default(0)
+  successItems  Int      @default(0)
+  failedItems   Int      @default(0)
+  progress      Float    @default(0) // 0.0–100.0
+  checkpoint    String?  // JSON: last processed state for resume
+  errorLog      String?  // Last error message
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  thumbnails Thumbnail[]
+  dlqEntries DLQEntry[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("collection_jobs")
+}
+
+// ─── Dead-Letter Queue ────────────────────────────────────────────────────────
+model DLQEntry {
+  id        String   @id @default(cuid())
+  jobId     String?
+  queueName String
+  payload   String   // JSON: original job data
+  error     String
+  attempts  Int      @default(0)
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+
+  job CollectionJob? @relation(fields: [jobId], references: [id])
+
+  @@index([queueName])
+  @@index([resolvedAt])
+  @@map("dlq_entries")
+}
+
+// ─── Dataset Exports ──────────────────────────────────────────────────────────
+model DatasetExport {
+  id          String   @id @default(cuid())
+  name        String
+  format      String   // "json" | "csv" | "zip"
+  filters     String   // JSON: applied filters
+  recordCount Int      @default(0)
+  filePath    String?
+  fileSizeKb  Int?
+  status      String   @default("pending") // "pending" | "ready" | "expired"
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@map("dataset_exports")
+}
+
+// ─── Collection Stats (aggregate metrics) ─────────────────────────────────────
+model CollectionStat {
+  id               String   @id @default(cuid())
+  date             DateTime @default(now())
+  totalThumbnails  Int      @default(0)
+  totalGames       Int      @default(0)
+  totalUsers       Int      @default(0)
+  storageUsedMb    Float    @default(0)
+  duplicatesFound  Int      @default(0)
+  errorsTotal      Int      @default(0)
+  apiRequestsMade  Int      @default(0)
+
+  @@index([date])
+  @@map("collection_stats")
+}
